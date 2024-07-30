@@ -6,6 +6,8 @@ import { pinecone } from "@/lib/pinecone";
 import { PineconeStore } from "@langchain/pinecone";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { Pinecone } from "@pinecone-database/pinecone";
+import { PLANS } from "@/config/stripe";
+import { getUserSubscriptionPlan } from "@/lib/stripe";
 
 const f = createUploadthing();
 
@@ -14,27 +16,36 @@ const middleware = async () => {
   const user = await getUser();
 
   if (!user || !user.id) throw new Error("Unauthorized");
+  const subscriptionPlan = await getUserSubscriptionPlan();
+  return { subscriptionPlan, userId: user.id };
 };
 
-export const ourFileRouter = {
-  pdfUploader: f({ pdf: { maxFileSize: "4MB" } }) //this can be used to allow which type of files are allowed to upload
-    .middleware(async ({ req }) => {
-      const { getUser } = getKindeServerSession();
-      const user = await getUser();
-
-      if (!user || !user.id) throw new Error("Unauthorized");
-      return { userId: user.id };
-    })
-    .onUploadComplete(async ({ metadata, file }) => {
-      const createdFile = await db.file.create({
-        data: {
-          key: file.key,
-          name: file.name,
-          userId: metadata.userId,
-          url: `https://utfs.io/f/${file.key}`,
-          uploadStatus: "PROCESSING",
-        },
-      });
+const onUploadComplete = async ({
+  metadata,
+  file,
+}: {
+  metadata: Awaited<ReturnType<typeof middleware>>;
+  file: {
+    key: string;
+    name: string;
+    url: string;
+  };
+}) => {
+  const isFileExist = await db.file.findFirst({
+    where: {
+      key: file.key,
+    },
+  });
+  if (isFileExist) return;
+  const createdFile = await db.file.create({
+    data: {
+      key: file.key,
+      name: file.name,
+      userId: metadata.userId,
+      url: `https://utfs.io/f/${file.key}`,
+      uploadStatus: "PROCESSING",
+    },
+  });
 
       try {
         //we need the pdf file to index it and vectorise it in order to see how many pages it has
@@ -44,8 +55,28 @@ export const ourFileRouter = {
         const loader = new PDFLoader(blob);
         //to extract PageLevel content meaning the page content
         const pageLevelDocs = await loader.load();
-
+        //to check pages per pdf to determine for the free and pro plan
         const pagesAmt = pageLevelDocs.length;
+
+        const { subscriptionPlan } = metadata;
+        const { isSubscribed } = subscriptionPlan;
+
+        const isProExceeded =
+          pagesAmt > PLANS.find((plan) => plan.name === "Pro")!.pagesPerPdf;
+        const isFreeExceeded =
+          pagesAmt > PLANS.find((plan) => plan.name === "Free")!.pagesPerPdf;
+
+        if (
+          (isSubscribed && isProExceeded) ||
+          (!isSubscribed && isFreeExceeded)
+        ) {
+          await db.file.update({
+            data: { uploadStatus: "FAILED" },
+            where: {
+              id: createdFile.id,
+            },
+          });
+        }
 
         //vectorize and index entire document
         const pineconeIndex = pinecone.Index("reed");
@@ -77,8 +108,16 @@ export const ourFileRouter = {
           },
         });
       }
-    }),
-} satisfies FileRouter;
-
-export type OurFileRouter = typeof ourFileRouter;
-
+    };
+    
+    export const ourFileRouter = {
+      freePlanUploader: f({ "application/pdf": { maxFileSize: "4MB" } })
+        .middleware(middleware)
+        .onUploadComplete(onUploadComplete),
+    
+        proPlanUploader: f({ "application/pdf": { maxFileSize: "16MB" } })
+        .middleware(middleware)
+        .onUploadComplete(onUploadComplete),
+    } satisfies FileRouter;
+    
+    export type OurFileRouter = typeof ourFileRouter;

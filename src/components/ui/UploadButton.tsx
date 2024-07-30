@@ -11,12 +11,14 @@ import { useToast } from "./use-toast";
 import { trpc } from "@/app/_trpc/client";
 import { useRouter } from "next/navigation";
 
-const UploadDropzone = () => {
+const UploadDropzone = ({ isSubscribed }: { isSubscribed: boolean }) => {
   const [isUploading, setIsUploading] = useState(false); //for the loading state
   const [uploadProgress, setUploadProgress] = useState(0); //it will only tell when we are done with the progress not the status of the progress bar
   const { toast } = useToast();
 
-  const { startUpload } = useUploadThing("pdfUploader");
+  const { startUpload } = useUploadThing(
+    isSubscribed ? "proPlanUploader" : "freePlanUploader"
+  );
   const router = useRouter();
 
   const startSimulatedProgress = () => {
@@ -99,7 +101,7 @@ const UploadDropzone = () => {
                   <span className="font-semibold">Click to Upload</span> or drag
                   and drop
                 </p>
-                <p className="text-xs text-zinc-500">PDF (up to 4MB)</p>
+                <p className="text-xs text-zinc-500">PDF (up to {isSubscribed? "16":"4"}MB)</p>
               </div>
 
               {acceptedFiles && acceptedFiles[0] ? (
@@ -115,15 +117,15 @@ const UploadDropzone = () => {
               {isUploading ? (
                 <div className="w-full mt-4 max-w-xs mx-auto">
                   <Progress
-                  indicatorColor={
-                    uploadProgress === 100? "bg-green-500" : ""
-                  }
+                    indicatorColor={
+                      uploadProgress === 100 ? "bg-green-500" : ""
+                    }
                     value={uploadProgress}
                     className="h-1 w-full bg-zinc-200"
                   />
                   {uploadProgress === 100 ? (
                     <div className="flex gap-1 items-center justify-center text-sm text-zinc-700 text-center pt-2">
-                      <Loader2 className="h-3 w-3 animate-spin"/>
+                      <Loader2 className="h-3 w-3 animate-spin" />
                       Redirecting...
                     </div> //this is to show the user after the upload is complete
                   ) : null}
@@ -143,7 +145,7 @@ const UploadDropzone = () => {
   ); //multiple is false because we only want it to pass one file when people upload on it
 };
 
-const UploadButton = () => {
+const UploadButton = ({ isSubscribed }: { isSubscribed: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <Dialog
@@ -159,7 +161,7 @@ const UploadButton = () => {
         <Button>Upload PDF</Button>
       </DialogTrigger>
       <DialogContent>
-        <UploadDropzone />
+        <UploadDropzone isSubscribed={isSubscribed} />
       </DialogContent>
     </Dialog>
   );
