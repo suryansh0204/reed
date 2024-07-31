@@ -9,9 +9,10 @@ import { ChatContextProvider } from "./ChatContext";
 
 interface ChatWrapperProps {
   fileId: string;
+  isSubscribed: boolean
 }
 //we are doing polling here
-const ChatWrapper = ({ fileId }: ChatWrapperProps) => {
+const ChatWrapper = ({ fileId,isSubscribed, }: ChatWrapperProps) => {
   const { data, isLoading } = trpc.getFileUploadStatus.useQuery(
     {
       fileId,

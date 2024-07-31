@@ -32,6 +32,7 @@ export default function Home() {
         >
           Get started <ArrowRight className="ml-2 h-5 w-5" />
         </Link>
+        
       </MaxWidthWrapper>
 
       {/** value proposition section*/}
