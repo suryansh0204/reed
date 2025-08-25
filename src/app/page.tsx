@@ -3,8 +3,15 @@ import MaxWidthWrapper from "@/components/ui/MaxWidthWrapper";
 import { ArrowRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import Image from "next/image";
+import {
+  getKindeServerSession,
+  RegisterLink,
+} from "@kinde-oss/kinde-auth-nextjs/server";
 
-export default function Home() {
+export default async function Home() {
+  const { getUser } = getKindeServerSession();
+  const user = await getUser();
+
   return (
     <>
       <MaxWidthWrapper className="mb-12 mt-28 sm:mt-40 flex flex-col items-center justify-center text-center">
@@ -22,17 +29,26 @@ export default function Home() {
           upload and start asking right away.
         </p>
 
-        <Link
-          className={buttonVariants({
-            size: "lg",
-            className: "mt-5",
-          })}
-          href="/dashboard"
-          target="_blank"
-        >
-          Get started <ArrowRight className="ml-2 h-5 w-5" />
-        </Link>
-        
+        {!user ? (
+          <RegisterLink
+            className={buttonVariants({
+              size: "lg",
+              className: "mt-5 relative z-10",
+            })}
+          >
+            Get started <ArrowRight className="ml-2 h-5 w-5" />
+          </RegisterLink>
+        ) : (
+          <Link
+            className={buttonVariants({
+              size: "lg",
+              className: "mt-5 relative z-10",
+            })}
+            href="/dashboard"
+          >
+            Go to Dashboard <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
+        )}
       </MaxWidthWrapper>
 
       {/** value proposition section*/}
@@ -40,7 +56,7 @@ export default function Home() {
         <div className="relative isolate">
           <div
             aria-hidden="true"
-            className="points-event-none absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+            className="pointer-events-none absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
           >
             <div
               style={{
@@ -70,7 +86,7 @@ export default function Home() {
 
           <div
             aria-hidden="true"
-            className="points-event-none absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+            className="pointer-events-none absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
           >
             <div
               style={{
