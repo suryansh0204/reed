@@ -96,6 +96,11 @@ export const appRouter = router({
       where: {
         userId,
       },
+      include: {
+        _count: {
+          select: { messages: true },
+        },
+      },
     });
   }),
 

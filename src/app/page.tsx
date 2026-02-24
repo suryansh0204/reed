@@ -119,11 +119,11 @@ export default async function Home() {
               <span className="text-xl font-semibold">
                 Sign up for the account
               </span>
-              <span className="mt-2 text-zine-700">
+              <span className="mt-2 text-zinc-700">
                 Either begin with a free plan or choose our{" "}
                 <Link
                   href="/pricing"
-                  className="text-red-700 underline-offset-2"
+                  className="text-red-700 underline underline-offset-2"
                 >
                   pro plan
                 </Link>
@@ -137,7 +137,7 @@ export default async function Home() {
               <span className="text-xl font-semibold">
                 Upload your PDF file
               </span>
-              <span className="mt-2 text-zine-700">
+              <span className="mt-2 text-zinc-700">
                 We&apos;ll process your file and make it ready for you to chat
                 with it.
               </span>
@@ -147,9 +147,9 @@ export default async function Home() {
             <div className="flex flex-col space-y-2 border-l-4 border-zinc-300 py-2 pl-4 md:border-l-0 md:border-t-2 md:pb-0 md:pl-0 md:pt-4">
               <span className="text-sm font-medium text-red-600">Step 3</span>
               <span className="text-xl font-semibold">
-                Start asking question{" "}
+                Start asking questions
               </span>
-              <span className="mt-2 text-zine-700">
+              <span className="mt-2 text-zinc-700">
                 It&apos;s that simple. Try out Reed now - it takes less than a
                 minute.
               </span>
@@ -171,6 +171,25 @@ export default async function Home() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-white">
+        <MaxWidthWrapper className="py-8">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <p className="text-sm text-zinc-500">
+              &copy; {new Date().getFullYear()} Reed. All rights reserved.
+            </p>
+            <div className="flex items-center gap-6">
+              <Link href="/pricing" className="text-sm text-zinc-500 hover:text-zinc-700 transition-colors">
+                Pricing
+              </Link>
+              <Link href="/dashboard" className="text-sm text-zinc-500 hover:text-zinc-700 transition-colors">
+                Dashboard
+              </Link>
+            </div>
+          </div>
+        </MaxWidthWrapper>
+      </footer>
     </>
   );
 }

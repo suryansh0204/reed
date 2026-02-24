@@ -10,7 +10,8 @@ import { PLANS } from "@/config/stripe";
 import { cn } from "@/lib/utils";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { ArrowRight, Check, Divide, HelpCircle, Link, Minus } from "lucide-react";
+import { ArrowRight, Check, HelpCircle, Minus } from "lucide-react";
+import Link from "next/link";
 
 const Page = async () => {
   const { getUser } = getKindeServerSession();
